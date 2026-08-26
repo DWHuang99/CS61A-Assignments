@@ -8,7 +8,7 @@ def divide(quotients, divisors):
     {1: [20, 21, 22, 23, 24], 2: [20, 22, 24], 3: [21, 24], 4: [20, 24]}
     """
     return {____: ____ for ____ in ____}
-
+    
 
 def buy(fruits_to_buy, prices, total_amount):
     """Print ways to buy some of each fruit so that the sum of prices is amount.

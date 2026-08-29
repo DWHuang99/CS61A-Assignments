@@ -7,6 +7,7 @@ from utils import (
     lines_from_file,
     count,
     deep_convert_to_tuple,
+    get_key_distances,
 )
 from ucb import main, interact, trace
 from datetime import datetime
@@ -37,7 +38,10 @@ def pick(paragraphs, select, k):
     ''
     """
     # BEGIN PROBLEM 1
-    "*** YOUR CODE HERE ***"
+    filtered = [p for p in paragraphs if select(p)]
+    if k < len(filtered):
+        return filtered[k]
+    return ''
     # END PROBLEM 1
 
 
@@ -58,8 +62,14 @@ def about(subject):
 
     # BEGIN PROBLEM 2
     "*** YOUR CODE HERE ***"
+    def match(paragrphs):
+        words = split(lower(remove_punctuation(paragrphs)))
+        for word in words:
+            if word in subject:
+                return True
+        return False
+    return match
     # END PROBLEM 2
-
 
 def accuracy(typed, source):
     """Return the accuracy (percentage of words typed correctly) of TYPED
@@ -88,6 +98,15 @@ def accuracy(typed, source):
     source_words = split(source)
     # BEGIN PROBLEM 3
     "*** YOUR CODE HERE ***"
+    def compare(short,long,lens):
+        correct = 0
+        for i in range(len(short)):
+                correct += (short[i] == long[i])
+        return correct/lens*100
+    if len(typed_words) == 0:
+        return 100.0 if len(source_words) == 0 else 0.0
+    else:
+        return compare(typed_words,source_words,len(typed_words)) if len(source_words)>= len(typed_words) else compare(source_words,typed_words,len(typed_words))
     # END PROBLEM 3
 
 
@@ -105,7 +124,7 @@ def wpm(typed, elapsed):
     """
     assert elapsed > 0, "Elapsed time must be positive"
     # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
+    return len(typed)/5 /(elapsed/60)
     # END PROBLEM 4
 
 
@@ -136,6 +155,17 @@ def memo_diff(diff_function):
     def memoized(typed, source, limit):
         # BEGIN PROBLEM EC
         "*** YOUR CODE HERE ***"
+        if (typed,source) not in cache:
+            result = diff_function(typed,source,limit)
+            cache[(typed,source)] = (result,limit)
+            return cache[(typed,source)][0]
+        if (typed,source) in cache:
+            value, old_limit = cache[(typed,source)]
+            if limit <= old_limit:
+                return value
+        value = diff_function(typed, source, limit)
+        cache[(typed,source)] = (value, limit)
+        return value
         # END PROBLEM EC
 
     return memoized
@@ -145,7 +175,7 @@ def memo_diff(diff_function):
 # Phase 2 #
 ###########
 
-
+@memo
 def autocorrect(typed_word, word_list, diff_function, limit):
     """Returns the element of WORD_LIST that has the smallest difference
     from TYPED_WORD based on DIFF_FUNCTION. If multiple words are tied for the smallest difference,
@@ -167,6 +197,13 @@ def autocorrect(typed_word, word_list, diff_function, limit):
     """
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    correct_word_list = {}
+    if typed_word in word_list:
+        return typed_word
+    else:
+        for word in word_list:
+            correct_word_list[word] = diff_function(typed_word,word,limit)
+        return min(correct_word_list,key=correct_word_list.get) if min(correct_word_list.values()) <= limit else typed_word
     # END PROBLEM 5
 
 
@@ -193,10 +230,21 @@ def furry_fixes(typed, source, limit):
     5
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    def next(typed,source,wrong_nums,limit):
+        if min(len(typed),len(source))-1 == 0 :
+            return 1 if typed[0] != source[0] else 0
+        if min(len(typed),len(source))-1 >0:
+            wrong_nums += int(typed[0] != source[0])
+            if wrong_nums > limit:
+                return wrong_nums
+            else:
+                return 1 + next(typed[1:],source[1:],wrong_nums,limit) if typed[0] != source[0] else next(typed[1:],source[1:],wrong_nums,limit)
+        
+
+    return next(typed,source,0,limit) +abs(len(typed) - len(source))
     # END PROBLEM 6
 
-
+@memo_diff
 def minimum_mewtations(typed, source, limit):
     """A diff function for autocorrect that computes the edit distance from TYPED to SOURCE.
     This function takes in a string TYPED, a string SOURCE, and a number LIMIT.
@@ -214,33 +262,59 @@ def minimum_mewtations(typed, source, limit):
     >>> minimum_mewtations("ckiteus", "kittens", big_limit) # ckiteus -> kiteus -> kitteus -> kittens
     3
     """
-    assert False, 'Remove this line'
-    if ___________: # Base cases should go here, you may add more base cases as needed.
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-    # Recursive cases should go below here
-    if ___________: # Feel free to remove or add additional cases
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-    else:
-        add = ... # Fill in these lines
-        remove = ...
-        substitute = ...
-        # BEGIN
-        "*** YOUR CODE HERE ***"
-        # END
-
+    remove = 0
+    add = 0
+    substitute = 0
+    if abs(len(typed) - len(source)) > limit:
+        return limit + 1
+    if typed == '' or source == '':
+        return max(len(source),len(typed))
+    if limit == 0:
+        return 0 if typed == source else 1
+    if typed[0] != source[0]:
+        if len(typed) == len(source):
+            return 1 + minimum_mewtations(typed[1:], source[1:], limit - 1)
+        add = minimum_mewtations(typed, source[1:], limit - 1)
+        remove = minimum_mewtations(typed[1:], source, limit - 1)
+        substitute = minimum_mewtations(typed[1:], source[1:], limit - 1)
+        return 1 + min(add, remove, substitute)
+    if typed[0] == source[0]:
+        return minimum_mewtations(typed[1:],source[1:],limit)
 
 # Ignore the line below
 minimum_mewtations = count(minimum_mewtations)
 
 
+KEY_DISTANCES = get_key_distances()
+@memo_diff
 def final_diff(typed, source, limit):
     """A diff function that takes in a string TYPED, a string SOURCE, and a number LIMIT.
     If you implement this function, it will be used."""
-    assert False, "Remove this line to use your final_diff function."
+    remove = 0
+    add = 0
+    substitute = 0
+    if abs(len(typed) - len(source)) > limit:
+        return limit + 1
+    if typed == '' or source == '':
+        return max(len(source),len(typed))
+    if limit == 0:
+        return 0 if typed == source else 1
+    if typed[0] != source[0]:
+        pair = (lower(typed[0]), lower(source[0]))
+        distance = KEY_DISTANCES.get(pair)
+        if min(len(typed),len(source)) >= 2:
+            if typed[1]+typed[0] == source[0]+source[1]:
+                return 1 + final_diff(typed[2:],source[2:],limit-1)
+        if distance is not None and distance < 1.5 and len(typed) == len(source):
+            return 1 + final_diff(typed[1:], source[1:], limit - 1)
+        if distance is not None and distance < 1.5 and (len(typed) - len(source)) ==1:
+            return 1 + final_diff(typed[1:], source, limit - 1)
+        add = final_diff(typed, source[1:], limit - 1)
+        remove = final_diff(typed[1:], source, limit - 1)
+        substitute = final_diff(typed[1:], source[1:], limit - 1)
+        return 1 + min(add, remove, substitute)
+    if typed[0] == source[0]:
+        return final_diff(typed[1:],source[1:],limit)
 
 
 FINAL_DIFF_LIMIT = 6  # REPLACE THIS WITH YOUR LIMIT
@@ -276,6 +350,14 @@ def report_progress(typed, source, user_id, upload):
     """
     # BEGIN PROBLEM 8
     "*** YOUR CODE HERE ***"
+    progress = 0.0
+    for i in range(len(typed)):
+        if typed[i] == source[i]:
+            progress = (i+1)/len(source)
+        if typed[i] != source[i]:
+            break
+    upload({'id':user_id,'progress':progress})
+    return progress
     # END PROBLEM 8
 
 
@@ -300,6 +382,8 @@ def time_per_word(words, timestamps_per_player):
     tpp = timestamps_per_player  # A shorter name (for convenience)
     # BEGIN PROBLEM 9
     times = []  # You may remove this line
+    for i in range(len(tpp)):
+        times += [[tpp[i][x+1]-tpp[i][x] for x in range(len(words))]]
     # END PROBLEM 9
     return {'words': words, 'times': times}
 
@@ -327,6 +411,7 @@ def fastest_words(words_and_times):
     word_indices = range(len(words))    # contains an *index* for each word
     # BEGIN PROBLEM 10
     "*** YOUR CODE HERE ***"
+    return [[words[x] for x in word_indices if min(player_indices, key=lambda player: times[player][x]) == players] for players in player_indices ]
     # END PROBLEM 10
 
 
@@ -352,7 +437,7 @@ def get_time(times, player_num, word_index):
     return times[player_num][word_index]
 
 
-enable_multiplayer = False  # Change to True when you're ready to race.
+enable_multiplayer = True  # Change to True when you're ready to race.
 
 ##########################
 # Command Line Interface #

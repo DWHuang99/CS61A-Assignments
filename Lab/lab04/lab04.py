@@ -7,7 +7,7 @@ def divide(quotients, divisors):
     >>> divide(range(1, 5), range(20, 25))
     {1: [20, 21, 22, 23, 24], 2: [20, 22, 24], 3: [21, 24], 4: [20, 24]}
     """
-    return {____: ____ for ____ in ____}
+    return {x: [y for y in divisors if y%x == 0] for x in quotients}
     
 
 def buy(fruits_to_buy, prices, total_amount):
@@ -29,12 +29,11 @@ def buy(fruits_to_buy, prices, total_amount):
             print(cart)
         elif fruits and amount > 0:
             fruit = fruits[0]
-            price = ____
-            for k in ____:
+            price = prices[fruit]
+            for k in range(1, amount//price + 1 ):
                 # Hint: The display function will help you add fruit to the cart.
-                add(____, ____, ____)
+                add(fruits[1:], amount - price*k, cart + display(fruit,k))
     add(fruits_to_buy, total_amount, '')
-
 
 def display(fruit, count):
     """Display a count of a fruit in square brackets.
@@ -51,9 +50,6 @@ def display(fruit, count):
         fruit = fruit[:-1]  # get rid of the plural s
     return '[' + str(count) + ' ' + fruit + ']'
 
-
-
-
 from math import sqrt
 def distance(city_a, city_b):
     """
@@ -67,6 +63,9 @@ def distance(city_a, city_b):
     5.0
     """
     "*** YOUR CODE HERE ***"
+    return (sqrt((get_lat(city_a)-get_lat(city_b))**2 + (get_lon(city_a)-get_lon(city_b))**2))
+
+
 
 def closer_city(lat, lon, city_a, city_b):
     """
@@ -84,6 +83,8 @@ def closer_city(lat, lon, city_a, city_b):
     'Bucharest'
     """
     "*** YOUR CODE HERE ***"
+    temp_city = make_city('temp_city',lat,lon)
+    return get_name(city_a) if distance(city_a,temp_city) <= distance(city_b,temp_city) else get_name(city_b)
 
 def check_city_abstraction():
     """
@@ -124,7 +125,7 @@ def make_city(name, lat, lon):
         return {"name" : name, "lat" : lat, "lon" : lon}
     else:
         return [name, lat, lon]
-
+    
 def get_name(city):
     """
     >>> city = make_city('Berkeley', 0, 1)
@@ -172,3 +173,6 @@ def change_abstraction(change):
 
 change_abstraction.changed = False
 
+# city_a = make_city('city_a', 0, 1)
+# city_b = make_city('city_b', 0, 2)
+# distance(city_a, city_b)

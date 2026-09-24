@@ -27,7 +27,10 @@ def insert_items(s, before, after):
     True
     """
     "*** YOUR CODE HERE ***"
-
+    for i in range(len(s)-1,-1,-1):
+        if s[i] == before:
+            s.insert(i+1,after)
+    return s
 
 def group_by(s, fn):
     """Return a dictionary of lists that together contain the elements of s.
@@ -40,12 +43,12 @@ def group_by(s, fn):
     {9: [-3, 3], 4: [-2, 2], 1: [-1, 1], 0: [0]}
     """
     grouped = {}
-    for ____ in ____:
-        key = ____
+    for i in s:
+        key = fn(i)
         if key in grouped:
-            ____
+            grouped[key].append(i)
         else:
-            grouped[key] = ____
+            grouped[key] = [i]
     return grouped
 
 
@@ -71,7 +74,11 @@ def count_occurrences(t, n, x):
     2
     """
     "*** YOUR CODE HERE ***"
-
+    result = 0
+    for _ in range(n):
+        if next(t) == x:
+            result += 1
+    return result
 
 def repeated(t, k):
     """Return the first value in iterator t that appears k times in a row,
@@ -94,7 +101,18 @@ def repeated(t, k):
     """
     assert k > 1
     "*** YOUR CODE HERE ***"
-
+    count = 1   
+    now = next(t)
+    while count < k:
+        nextnum = next(t,None)
+        if nextnum == None:
+            break
+        if now == nextnum:
+            count = count + 1
+        else:
+            count = 1
+        now = nextnum
+    return now if count == k else None
 
 def sprout_leaves(t, leaves):
     """Sprout new leaves containing the labels in leaves at each leaf of
@@ -130,6 +148,12 @@ def sprout_leaves(t, leaves):
           2
     """
     "*** YOUR CODE HERE ***"
+    if is_leaf(t):
+        t = tree(label(t),[tree(x,[]) for x in leaves])
+    else:
+        t = tree(label(t),[sprout_leaves(x,leaves)for x in branches(t)])
+    return t
+
 
 
 def partial_reverse(s, start):
@@ -145,6 +169,11 @@ def partial_reverse(s, start):
     [1, 2, 7, 6, 5, 3, 4]
     """
     "*** YOUR CODE HERE ***"
+    end = len(s)-1
+    while start <= end:
+        s[start] , s[end] = s[end],s[start]
+        start = start + 1
+        end = end - 1
 
 
 
@@ -212,4 +241,3 @@ def copy_tree(t):
     5
     """
     return tree(label(t), [copy_tree(b) for b in branches(t)])
-

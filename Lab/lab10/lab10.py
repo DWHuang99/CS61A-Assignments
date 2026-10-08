@@ -87,11 +87,9 @@ def eval_and(expressions):
     result = calc_eval(expressions.first)
     if result is scheme_f:
         return scheme_f
-    next = expressions.rest
+    next = expressions.rest.map(calc_eval)
     while next != nil:
-        if next.first is scheme_f:
-            return scheme_f
-        value = calc_eval(next.first) 
+        value = next.first
         if value is scheme_f:
             return scheme_f
         result = value
@@ -115,7 +113,8 @@ def eval_define(expressions):
     2
     """
     "*** YOUR CODE HERE ***"
-    
+
+    # value = calc_eval(expressions.rest)
     value = expressions.rest.map(calc_eval)
     bindings[expressions.first] = value.first
     return expressions.first

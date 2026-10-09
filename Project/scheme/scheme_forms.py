@@ -37,11 +37,24 @@ def do_define_form(expressions, env):
         validate_form(expressions, 2, 2) # Checks that expressions is a list of length exactly 2
         # BEGIN PROBLEM 4
         "*** YOUR CODE HERE ***"
+        def eval_env(expr):
+            return scheme_eval(expr,env)
+        env.define(signature,expressions.rest.map(eval_env).first)
+        return signature
         # END PROBLEM 4
     elif isinstance(signature, Pair) and scheme_symbolp(signature.first):
         # defining a named procedure e.g. (define (f x y) (+ x y))
         # BEGIN PROBLEM 10
         "*** YOUR CODE HERE ***"
+        def eval_env(expr):
+            return scheme_eval(expr,env)
+        # way2
+        lambda_exp = Pair(signature.rest,expressions.rest)
+        lambda_pair = do_lambda_form(lambda_exp,env)
+        env.define(signature.first,lambda_pair)
+        return signature.first
+
+        #way
         # END PROBLEM 10
     else:
         bad_signature = signature.first if isinstance(signature, Pair) else signature
@@ -57,6 +70,7 @@ def do_quote_form(expressions, env):
     validate_form(expressions, 1, 1)
     # BEGIN PROBLEM 5
     "*** YOUR CODE HERE ***"
+    return expressions.first
     # END PROBLEM 5
 
 def do_begin_form(expressions, env):
@@ -83,6 +97,8 @@ def do_lambda_form(expressions, env):
     validate_formals(formals)
     # BEGIN PROBLEM 7
     "*** YOUR CODE HERE ***"
+    new_lambda = LambdaProcedure(formals,expressions.rest,env)
+    return new_lambda
     # END PROBLEM 7
 
 def do_if_form(expressions, env):
@@ -116,6 +132,13 @@ def do_and_form(expressions, env):
     """
     # BEGIN PROBLEM 12
     "*** YOUR CODE HERE ***"
+    result = True
+    while expressions is not nil:
+        result = scheme_eval(expressions.first, env)
+        if is_scheme_false(result):
+            return False
+        expressions = expressions.rest
+    return result
     # END PROBLEM 12
 
 def do_or_form(expressions, env):
@@ -134,6 +157,12 @@ def do_or_form(expressions, env):
     """
     # BEGIN PROBLEM 12
     "*** YOUR CODE HERE ***"
+    while expressions is not nil:
+        result = scheme_eval(expressions.first, env)
+        if is_scheme_true(result):
+            return result
+        expressions = expressions.rest
+    return False
     # END PROBLEM 12
 
 def do_cond_form(expressions, env):
@@ -154,6 +183,9 @@ def do_cond_form(expressions, env):
         if is_scheme_true(test):
             # BEGIN PROBLEM 13
             "*** YOUR CODE HERE ***"
+            if clause.rest == nil:
+                return test
+            return eval_all(clause.rest,env)
             # END PROBLEM 13
         expressions = expressions.rest
 
@@ -178,6 +210,42 @@ def make_let_frame(bindings, env):
     names = vals = nil
     # BEGIN PROBLEM 14
     "*** YOUR CODE HERE ***"
+    def eval_env(expr):
+        return scheme_eval(expr,env)
+    if bindings == nil:
+        None
+    elif isinstance(bindings.first,Pair):
+        expr = bindings.first 
+        if scheme_symbolp(expr.first):
+            names = Pair(expr.first,nil)
+        else:
+            raise SchemeError
+        vals = expr.rest.map(eval_env)
+        # vals = Pair(scheme_eval(expr.rest.first,env),nil)
+        last_name = names
+        last_val = vals
+        bindings = bindings.rest
+        while bindings != nil:
+            expr = bindings.first
+            if scheme_symbolp(expr.first):
+                new_name = Pair(expr.first,nil)
+                if new_name == last_name:
+                    raise SchemeError
+            else:
+                raise SchemeError
+            new_val = expr.rest.map(eval_env)
+            last_name.rest = new_name
+            last_val.rest = new_val
+            last_name = new_name
+            last_val = new_val
+            bindings = bindings.rest
+    elif scheme_symbolp(bindings.first):
+        expr = bindings.first
+        if scheme_symbolp(expr.first):
+            names = Pair(expr.first,nil)
+        else:
+            raise SchemeError
+        vals = expr.rest.map(eval_env)
     # END PROBLEM 14
     return env.make_child_frame(names, vals)
 
@@ -220,6 +288,8 @@ def do_mu_form(expressions, env):
     validate_formals(formals)
     # BEGIN PROBLEM 11
     "*** YOUR CODE HERE ***"
+    new_mu = MuProcedure(formals,expressions.rest)
+    return new_mu
     # END PROBLEM 11
 
 

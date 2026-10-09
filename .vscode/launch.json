@@ -1,0 +1,20 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python：调试当前文件（Lab 等）",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "调试 Scheme",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/Project/scheme/debug.py",
+      "cwd": "${workspaceFolder}/Project/scheme",
+      "console": "integratedTerminal"
+    }
+  ]
+}

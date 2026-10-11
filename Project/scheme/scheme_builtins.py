@@ -319,6 +319,8 @@ def scheme_exit():
 
 @builtin("map", need_env=True)
 def scheme_map(fn, s, env):
+    from scheme_eval_apply import complete_apply
+
     validate_type(fn, scheme_procedurep, 0, 'map')
     validate_type(s, scheme_listp, 1, 'map')
     return s.map(lambda x: complete_apply(fn, Pair(x, nil), env))

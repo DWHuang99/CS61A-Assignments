@@ -101,16 +101,17 @@ def eval_all(expressions, env):
     2
     """
     # BEGIN PROBLEM 6
-    def eval_env(expr):
-        return scheme_eval(expr,env)
-    pair_res = expressions.map(eval_env)
-    res = pair_res
-    if res == nil:
+def eval_all(expressions, env):
+    if expressions is nil:
         return None
-    while res != nil:
-        result = res.first
-        res = res.rest 
-    return result # replace this with lines of your own code
+
+    # 前面的表达式：立即求值，确保按顺序执行
+    while expressions.rest is not nil:
+        scheme_eval(expressions.first, env)
+        expressions = expressions.rest
+
+    # 最后一个表达式：交给外层求值，直接传回结果
+    return scheme_eval(expressions.first, env, True)
     # END PROBLEM 6
 
 
@@ -147,6 +148,9 @@ def optimize_tail_calls(unoptimized_scheme_eval):
         result = Unevaluated(expr, env)
         # BEGIN OPTIONAL PROBLEM 1
         "*** YOUR CODE HERE ***"
+        while isinstance(result, Unevaluated):
+            result = unoptimized_scheme_eval(result.expr, result.env)
+        return result
         # END OPTIONAL PROBLEM 1
     return optimized_eval
 
@@ -167,4 +171,4 @@ def optimize_tail_calls(unoptimized_scheme_eval):
 # Uncomment the following line to apply tail call optimization #
 ################################################################
 
-# scheme_eval = optimize_tail_calls(scheme_eval)
+scheme_eval = optimize_tail_calls(scheme_eval)

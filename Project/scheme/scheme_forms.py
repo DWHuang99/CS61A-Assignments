@@ -112,9 +112,9 @@ def do_if_form(expressions, env):
     """
     validate_form(expressions, 2, 3)
     if is_scheme_true(scheme_eval(expressions.first, env)):
-        return scheme_eval(expressions.rest.first, env)
+        return scheme_eval(expressions.rest.first, env,True)
     elif len(expressions) == 3:
-        return scheme_eval(expressions.rest.rest.first, env)
+        return scheme_eval(expressions.rest.rest.first, env,True)
 
 def do_and_form(expressions, env):
     """Evaluate a (short-circuited) and form.
@@ -132,13 +132,14 @@ def do_and_form(expressions, env):
     """
     # BEGIN PROBLEM 12
     "*** YOUR CODE HERE ***"
-    result = True
-    while expressions is not nil:
+    if expressions is nil:
+        return True
+    while expressions.rest is not nil:
         result = scheme_eval(expressions.first, env)
         if is_scheme_false(result):
             return False
         expressions = expressions.rest
-    return result
+    return scheme_eval(expressions.first, env, True)
     # END PROBLEM 12
 
 def do_or_form(expressions, env):
@@ -157,12 +158,16 @@ def do_or_form(expressions, env):
     """
     # BEGIN PROBLEM 12
     "*** YOUR CODE HERE ***"
-    while expressions is not nil:
+    if expressions is nil:
+        return False
+
+    while expressions.rest is not nil:
         result = scheme_eval(expressions.first, env)
         if is_scheme_true(result):
             return result
         expressions = expressions.rest
-    return False
+
+    return scheme_eval(expressions.first, env, True)
     # END PROBLEM 12
 
 def do_cond_form(expressions, env):

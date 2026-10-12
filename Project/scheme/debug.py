@@ -6,13 +6,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent / 'scheme_reader'))
 
 from scheme import scheme_eval, create_global_frame, read_line
 env = create_global_frame()
-exp2 = read_line("(define x 10)")
-scheme_eval(exp2,env)
 
-res1 = scheme_eval(read_line("x"),env)
-print(res1)
-scheme_eval(read_line("(define y x)"),env)
-scheme_eval(read_line("(define x 20)"),env)
-y = scheme_eval(read_line("y"),env)
-print(y)
-
+scheme_eval(read_line("(define three-curry (lambda (x) (lambda (y) (lambda (z) (+ x (* y z)))) ))"),env)
+res = scheme_eval(read_line("three-curry"),env)
+exp = read_line("(lambda (x) (lambda (y) (lambda (z) (+ x (* y z)))))")
+print(res)
